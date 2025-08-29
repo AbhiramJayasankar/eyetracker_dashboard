@@ -625,7 +625,8 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/user`, {
                     headers: {
-                        'Authorization': `Bearer ${authToken}`
+                        'Authorization': `Bearer ${authToken}`,
+                        'ngrok-skip-browser-warning': 'true'
                     }
                 });
 
@@ -645,7 +646,8 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/sessions`, {
                     headers: {
-                        'Authorization': `Bearer ${authToken}`
+                        'Authorization': `Bearer ${authToken}`,
+                        'ngrok-skip-browser-warning': 'true'
                     }
                 });
 
