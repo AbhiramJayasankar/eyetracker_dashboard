@@ -433,6 +433,125 @@
         .stat-card:nth-child(1) { animation-delay: 0.1s; }
         .stat-card:nth-child(2) { animation-delay: 0.2s; }
         .stat-card:nth-child(3) { animation-delay: 0.3s; }
+
+        /* GDPR Compliance Section */
+        .gdpr-section {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gdpr-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .gdpr-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gdpr-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        }
+
+        .gdpr-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .gdpr-card.danger {
+            border-color: rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .gdpr-card.danger::before {
+            background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.5), transparent);
+        }
+
+        .gdpr-card.danger:hover {
+            border-color: rgba(239, 68, 68, 0.4);
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .gdpr-card h3 {
+            margin-bottom: 0.75rem;
+            color: #ffffff;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .gdpr-card p {
+            color: #d1d5db;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+
+        .gdpr-btn {
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .export-btn {
+            background: rgba(59, 130, 246, 0.1);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .export-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            color: #ffffff;
+            border-color: rgba(59, 130, 246, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .delete-sessions-btn {
+            background: rgba(245, 158, 11, 0.1);
+            color: #fcd34d;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .delete-sessions-btn:hover {
+            background: rgba(245, 158, 11, 0.2);
+            color: #ffffff;
+            border-color: rgba(245, 158, 11, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .delete-account-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .delete-account-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ffffff;
+            border-color: rgba(239, 68, 68, 0.4);
+            transform: translateY(-1px);
+        }
     </style>
 </head>
 <body>
@@ -501,6 +620,30 @@
                 <h2>Recent Sessions</h2>
                 <div id="sessions-list">
                     <!-- Sessions will be populated here -->
+                </div>
+            </div>
+            
+            <!-- GDPR Compliance Section -->
+            <div class="gdpr-section">
+                <h2>Data Management</h2>
+                <div class="gdpr-actions">
+                    <div class="gdpr-card">
+                        <h3>Export Your Data</h3>
+                        <p>Download all your account data and sessions in JSON format.</p>
+                        <button class="btn gdpr-btn export-btn" onclick="exportData()">Download Data</button>
+                    </div>
+                    
+                    <div class="gdpr-card">
+                        <h3>Delete Sessions</h3>
+                        <p>Permanently delete all your eye tracking sessions while keeping your account.</p>
+                        <button class="btn gdpr-btn delete-sessions-btn" onclick="deleteSessions()">Delete All Sessions</button>
+                    </div>
+                    
+                    <div class="gdpr-card danger">
+                        <h3>Delete Account</h3>
+                        <p>Permanently delete your account and all associated data. This action cannot be undone.</p>
+                        <button class="btn gdpr-btn delete-account-btn" onclick="deleteAccount()">Delete Account</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -745,6 +888,117 @@
             document.getElementById('auth-section').style.display = 'block';
             document.getElementById('dashboard').style.display = 'none';
             showLogin();
+        }
+
+        // GDPR Compliance Functions
+        async function exportData() {
+            if (!confirm('Download your data export? This will include all your account information and sessions.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/export`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'ngrok-skip-browser-warning': 'true'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Create download link
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `eye-tracker-data-export-${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    
+                    showError('Data exported successfully!');
+                } else {
+                    const errorData = await response.json();
+                    showError(errorData.detail || 'Failed to export data');
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+            }
+        }
+
+        async function deleteSessions() {
+            if (!confirm('Are you sure you want to delete ALL your sessions? This action cannot be undone.')) {
+                return;
+            }
+
+            if (!confirm('This will permanently delete all your eye tracking data. Are you absolutely sure?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/sessions`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'ngrok-skip-browser-warning': 'true'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showError(`Successfully deleted ${data.deleted_sessions} sessions.`);
+                    
+                    // Refresh dashboard data
+                    await loadUserData();
+                    await loadSessions();
+                } else {
+                    const errorData = await response.json();
+                    showError(errorData.detail || 'Failed to delete sessions');
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+            }
+        }
+
+        async function deleteAccount() {
+            if (!confirm('Are you sure you want to DELETE YOUR ENTIRE ACCOUNT? This will permanently delete your account and all data.')) {
+                return;
+            }
+
+            if (!confirm('This action is IRREVERSIBLE. All your data will be permanently lost. Type "DELETE" in the next prompt to confirm.')) {
+                return;
+            }
+
+            const confirmation = prompt('Type "DELETE" to confirm account deletion:');
+            if (confirmation !== 'DELETE') {
+                showError('Account deletion cancelled.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'ngrok-skip-browser-warning': 'true'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(`Account deleted successfully. ${data.deleted_sessions} sessions were also removed.`);
+                    
+                    // Log out user
+                    logout();
+                } else {
+                    const errorData = await response.json();
+                    showError(errorData.detail || 'Failed to delete account');
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+            }
         }
     </script>
 </body>
